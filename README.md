@@ -23,3 +23,13 @@ The CANFD LIN Gateway is a freely programmable router/data-logger/simulator that
 - On-board 16 Kbit EEPROM
 - Externally or USB-powered
 - Table-top use or DIN-rail mount
+
+### Use Cases
+- CAN FD to CAN bridge
+- CAN to LIN gateway
+- CAN/LIN bus to RS-232
+- Data logging
+- Communication simulation
+- ECU emulation
+- Remote monitoring of inputs
+- Remote control of outputs
