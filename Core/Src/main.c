@@ -1025,11 +1025,12 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, LED_USER_R_Pin|LED_USER_G_Pin|LED_CAN1_R_Pin|LED_CAN1_Y_Pin
                           |OUT_3_OD_Pin|OUT_2_PP_Pin|_5V_OUT_EN_Pin|_5V_OUT_FAULT_Pin
-                          |CAN2_STB_Pin|LIN_CS_Pin, GPIO_PIN_RESET);
+                          |LIN_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LED_CAN2_R_Pin|LED_CAN2_Y_Pin, GPIO_PIN_RESET);
@@ -1038,7 +1039,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(SPI_MEM_CS_GPIO_Port, SPI_MEM_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, OUT_1_PP_Pin|CAN1_STB_Pin|LIN_WAKE_Pin|LIN_MASTER_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, OUT_1_PP_Pin|LIN_WAKE_Pin|LIN_MASTER_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CAN2_STB_GPIO_Port, CAN2_STB_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CAN1_STB_GPIO_Port, CAN1_STB_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : RESET_USER_Pin */
   GPIO_InitStruct.Pin = RESET_USER_Pin;
@@ -1084,8 +1091,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(OUT_3_OD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OUT_1_PP_Pin CAN1_STB_Pin LIN_WAKE_Pin */
-  GPIO_InitStruct.Pin = OUT_1_PP_Pin|CAN1_STB_Pin|LIN_WAKE_Pin;
+  /*Configure GPIO pins : OUT_1_PP_Pin LIN_WAKE_Pin */
+  GPIO_InitStruct.Pin = OUT_1_PP_Pin|LIN_WAKE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1096,6 +1103,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SD_DETECT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CAN1_STB_Pin */
+  GPIO_InitStruct.Pin = CAN1_STB_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(CAN1_STB_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LIN_MASTER_Pin */
   GPIO_InitStruct.Pin = LIN_MASTER_Pin;
@@ -1254,8 +1268,11 @@ void initCanTxData(void)
   TxHeader.TxFrameType = FDCAN_DATA_FRAME;
   TxHeader.DataLength = FDCAN_DLC_BYTES_3;
   TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-  TxHeader.BitRateSwitch = FDCAN_BRS_ON;
-  TxHeader.FDFormat = FDCAN_FD_CAN;
+  TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
+  TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
+  /* Next two lines would make the frame FD CAN with BRS on */
+  /*TxHeader.BitRateSwitch = FDCAN_BRS_ON;
+  TxHeader.FDFormat = FDCAN_FD_CAN;*/
   TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
   TxHeader.MessageMarker = 0;
 

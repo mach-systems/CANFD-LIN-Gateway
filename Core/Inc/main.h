@@ -152,10 +152,10 @@ void SpiInterruptCallback(void);
 #define LIN_RXD_GPIO_Port GPIOC
 #define LIN_CS_Pin GPIO_PIN_12
 #define LIN_CS_GPIO_Port GPIOC
+#define CAN1_STB_Pin GPIO_PIN_2
+#define CAN1_STB_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
-#define CAN1_STB_Pin GPIO_PIN_4
-#define CAN1_STB_GPIO_Port GPIOB
 #define CAN1_RXD_Pin GPIO_PIN_5
 #define CAN1_RXD_GPIO_Port GPIOB
 #define CAN1_TXD_Pin GPIO_PIN_6
