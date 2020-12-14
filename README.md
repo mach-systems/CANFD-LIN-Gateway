@@ -1,11 +1,11 @@
-# CANFD LIN Gateway
+# CAN-FD LIN Gateway
 https://www.machsystems.cz/en/products/embedded-networking/gateways-and-bus-converters/canfd-lin-gateway
 
 Product Number: CANFD-LIN-GW
 
 A STM32CubeIDE example project that shows the usage of all peripherals.
 
-The CANFD LIN Gateway is a freely programmable router/data-logger/simulator that features two CAN FD channels, a LIN channel, and a RS-232 port. The interface also offers a microSD card slot and multiple digital/analogue inputs and outputs, which makes it suitable for a broad range of use-cases such as protocol conversion, network bridging, data logging, rest-bus simulation, and external peripheral control and monitoring.
+The CAN FD LIN Gateway is a freely programmable converter/router/data-logger/ that features two CAN FD channels, a LIN channel, and a RS-232 port. The converter also offers a microSD card slot and multiple digital/analogue inputs and outputs, which makes it suitable for a broad range of use-cases such as protocol conversion, network bridging, data logging, rest-bus simulation, and external peripheral control and monitoring.
 
 ### Device Features:
 - Two high-speed CAN channels with CAN FD support
