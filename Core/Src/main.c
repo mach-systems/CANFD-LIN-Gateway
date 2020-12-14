@@ -1198,12 +1198,12 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     {
       Error_Handler();
     }
-
     uint8_t datalen = DatalenToInt(RxHeader.DataLength);
-    /* If first two data bytes are 0x55 and 0xaa, jump to the bootloader */
-    if (datalen >= 2 && RxData[0] == 0x55 && RxData[1] == 0xaa)
+
+    /* It is strongly suggested to keep the possibility to jump to System Booloader from application */
+    if (RxHeader.Identifier==0x1fffffff && datalen == 4 && RxData[0] == 0 && RxData[1] == 1 && RxData[2] == 2 && RxData[3] == 3)
     {
-      /* Cannot go to the bootloader directly from ISR */
+      /* Cannot go to bootloader directly from ISR */
       bootloaderRequest = 1;
       return;
     }
