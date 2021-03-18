@@ -1047,12 +1047,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CAN1_STB_GPIO_Port, CAN1_STB_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : RESET_USER_Pin */
-  GPIO_InitStruct.Pin = RESET_USER_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(RESET_USER_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pins : DIPSW_1_Pin DIPSW_2_Pin */
   GPIO_InitStruct.Pin = DIPSW_1_Pin|DIPSW_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -1111,6 +1105,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CAN1_STB_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : RESET_USER_Pin */
+  GPIO_InitStruct.Pin = RESET_USER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(RESET_USER_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : LIN_MASTER_Pin */
   GPIO_InitStruct.Pin = LIN_MASTER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -1119,8 +1119,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LIN_MASTER_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 
@@ -1409,7 +1409,7 @@ void SpiInterruptCallback(void)
  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == GPIO_PIN_13)
+  if (GPIO_Pin == GPIO_PIN_8)
   {
     TxData[0] = ++canFramesSent;
     TxData[1] = (!DIPSW1_READ()) & 0x1;

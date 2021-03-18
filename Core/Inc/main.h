@@ -75,9 +75,6 @@ void SpiInterruptCallback(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define RESET_USER_Pin GPIO_PIN_13
-#define RESET_USER_GPIO_Port GPIOC
-#define RESET_USER_EXTI_IRQn EXTI15_10_IRQn
 #define DIPSW_1_Pin GPIO_PIN_14
 #define DIPSW_1_GPIO_Port GPIOC
 #define DIPSW_2_Pin GPIO_PIN_15
@@ -162,6 +159,9 @@ void SpiInterruptCallback(void);
 #define CAN1_TXD_GPIO_Port GPIOB
 #define LIN_WAKE_Pin GPIO_PIN_7
 #define LIN_WAKE_GPIO_Port GPIOB
+#define RESET_USER_Pin GPIO_PIN_8
+#define RESET_USER_GPIO_Port GPIOB
+#define RESET_USER_EXTI_IRQn EXTI9_5_IRQn
 #define LIN_MASTER_Pin GPIO_PIN_9
 #define LIN_MASTER_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
