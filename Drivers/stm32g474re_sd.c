@@ -262,14 +262,14 @@ typedef void (* BSP_EXTI_LineCallback) (void);
   * @brief  SD chip select unactive (high) : SD not selected.
   * @retval none
   */
-#define SD_CS_OFF()    HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_RESET)
-#define SD_CS_HIGH()   HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_SET)
+#define SD_CS_OFF()    HAL_Delay(1);HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_RESET)
+#define SD_CS_HIGH()   HAL_Delay(1);HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_SET)
 /**
   * @brief  SD chip select active(low) : SD selected.
   * @retval none
   */
-#define SD_CS_ON()     HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_SET)
-#define SD_CS_LOW()    HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_RESET)
+#define SD_CS_ON()     HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_SET);HAL_Delay(1)
+#define SD_CS_LOW()    HAL_GPIO_WritePin(SD_CS_GPIO_PORT, SD_CS_PIN, GPIO_PIN_RESET);HAL_Delay(1)
 
 #define SD_IO_WriteDummy()   (void)BSP_SPI2_Send((uint8_t*)&DummyByte, 1)
 
@@ -1454,6 +1454,7 @@ static int32_t SD_GoIdleState(void)
   /* Send CMD0 (SD_CMD_GO_IDLE_STATE) to put SD in SPI mode and
      wait for In Idle State Response (R1 Format) equal to 0x01 */
   /* CS is asserted (low) by SD_SendCmd during the reception of the reset cmd */
+  uint8_t resp[SD_MAX_TRY];
   do
   {
     counter++;
@@ -1461,6 +1462,7 @@ static int32_t SD_GoIdleState(void)
     /* Wait for In Idle State Response (R1 Format) equal to 0x01 */
     SD_IO_CSState(1);
     SD_IO_WriteDummy(); 
+    resp[counter - 1] = response.r1;
     if(counter >= SD_MAX_TRY)
     {
         break;
@@ -1830,7 +1832,7 @@ void SD_IO_Init(void)
   /* Configure SD_CS_PIN pin: SD Card CS pin */
   SD_CS_GPIO_CLK_ENABLE();
   GPIO_InitStruct.Pin = SD_CS_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(SD_CS_GPIO_PORT, &GPIO_InitStruct);

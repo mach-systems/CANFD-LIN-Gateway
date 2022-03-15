@@ -232,5 +232,3 @@ void BSP_SD_DetectCallback(uint32_t Instance, uint32_t Status)
   }
 }
 /* USER CODE END Application */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

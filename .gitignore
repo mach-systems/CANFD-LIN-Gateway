@@ -47,4 +47,5 @@ Thumbs.db
 
 #Directories
 Debug/
+Release/
 .settings/

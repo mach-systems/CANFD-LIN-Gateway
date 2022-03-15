@@ -25,8 +25,8 @@
   * - Table-top use or DIN-rail mount
   *
   * MCU: STM32G483RE
-  * IDE: STM32CubeIDE v1.4.0
-  * HAL: STM32CubeG4 Firmware Package V1.3.0
+  * IDE: STM32CubeIDE v1.9.0
+  * HAL: STM32CubeG4 Firmware Package V1.5.0
   *
   *
   * Connector pinout of the CANFD LIN Gateway device:
@@ -38,7 +38,7 @@
   *               Pin 6    - Analog input 1 (0 - 5 V)
   *               Pin 7    - CAN1 High
   *               Pin 8    - Digital Output 2 (5 V push-pull)
-  *               Pin 9    - Vin/ Vbat (7 - 30 V DC)
+  *               Pin 9    - Vin / Vbat (7 - 30 V DC)
   *
   * D-SUB9 Female: Pin 1    - Digital Output 3 (5 V push-pull)
   *                Pin 2    - CAN2 Low
@@ -84,23 +84,26 @@
   *           - 0x00 turn off
   *
   * Bootloader:
-  *   CAN frame with first two data bytes 0x55 0xaa (on CAN1 or CAN2) will
-  * reset the device to bootloader. If you then connect USB cable or one of
-  * UARTs, you can upload new firmware to the device. See manual for more info.
+  *   CAN frame with extended frame ID 0x1fffffff and first four data bytes 0x00
+  * 0x01 0x02 0x03 (on CAN1 or CAN2) will reset the device to bootloader. If you
+  * then connect USB cable or one of UARTs, you can upload new firmware to the
+  * device. See manual for more info.
   *
   * Virtual COM Port:
-  *   You can connect to the COM port via usb cable. When CAN frame is received,
+  *   You can connect to the COM port via USB cable. When CAN frame is received,
   * some info about it is sent to the COM port. There is ID, on which channel it
   * was received, number of data bytes and the data. Also, data received on the
-  * COM port are sent to debug uart. For its settings, see below.
+  * COM port are sent to debug UART. For its settings, see below.
   *
   * EEPROM:
   *   Program tries to write the whole EEPROM (2 KiB) with data and then read it
   * back. It checks if the read data is correct. Then, the whole EEPROM is erased,
-  * again read back and checked that it contains 0xFF.
+  * again read back and checked that it contains 0xFF. Uncomment EEPROM_TESTING
+  * for activating this example.
   *
   * RS-232:
-  *   Received data are sent back. Settings are: 115200, 8 B, 1 stop bit, no parity.
+  *   Received data are sent back. Uncomment TEST_UART for this example.
+  * Settings are: 115200, 8 B, 1 stop bit, no parity.
   *
   * Debug UART:
   *   Data received on Virtual COM port are sent to debug UART. Settings are:
@@ -178,6 +181,7 @@
 //#define EEPROM_TESTING
 #define LIN_EXAMPLE
 //#define TEST_SDCARD
+//#define TEST_UART     /* Blocking RS-232 example */
 
 #define LIN_TICKS_PER_SECOND  1000
 #define LIN_TICKS_WAIT        10
@@ -195,7 +199,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+ ADC_HandleTypeDef hadc1;
 
 FDCAN_HandleTypeDef hfdcan2;
 FDCAN_HandleTypeDef hfdcan3;
@@ -232,7 +236,7 @@ uint8_t adcState = 0;
 uint32_t adcValues[2];
 
 /* Request to go to bootloader */
-uint8_t bootloaderRequest = 0;
+uint8_t BootloaderRequest = 0;
 
 /* LIN variables */
 uint8_t linTxData[LIN_TX_DATA_SIZE] = {0, 0, 0};
@@ -359,7 +363,7 @@ int main(void)
 
   while (1)
   {
-    if (bootloaderRequest)
+    if (BootloaderRequest)
       jumpToBootloader();
 
 #ifdef TEST_UART
@@ -408,8 +412,8 @@ int main(void)
         LED_CAN2_Y_OFF();
     }
 
-    /* Btn active in zero */
-    if (!RESET_USER_READ())
+    /* Btn active in one (changed from earlier HW) */
+    if (RESET_USER_READ())
       linTxData[0] |= 1;
     else
       linTxData[0] &= 0;
@@ -444,11 +448,11 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Configure the main internal regulator output voltage
   */
   HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -465,6 +469,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -475,21 +480,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Initializes the peripherals clocks
-  */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2
-                              |RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USB
-                              |RCC_PERIPHCLK_ADC12|RCC_PERIPHCLK_FDCAN;
-  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-  PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
-  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-  PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
@@ -513,6 +503,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
+
   /** Common config
   */
   hadc1.Instance = ADC1;
@@ -535,6 +526,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure the ADC multi-mode
   */
   multimode.Mode = ADC_MODE_INDEPENDENT;
@@ -542,6 +534,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_14;
@@ -576,6 +569,7 @@ static void MX_FDCAN2_Init(void)
 
   /* USER CODE END FDCAN2_Init 1 */
   hfdcan2.Instance = FDCAN2;
+  hfdcan2.Init.ClockDivider = FDCAN_CLOCK_DIV1;
   hfdcan2.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
   hfdcan2.Init.Mode = FDCAN_MODE_NORMAL;
   hfdcan2.Init.AutoRetransmission = DISABLE;
@@ -618,6 +612,7 @@ static void MX_FDCAN3_Init(void)
 
   /* USER CODE END FDCAN3_Init 1 */
   hfdcan3.Instance = FDCAN3;
+  hfdcan3.Init.ClockDivider = FDCAN_CLOCK_DIV1;
   hfdcan3.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
   hfdcan3.Init.Mode = FDCAN_MODE_NORMAL;
   hfdcan3.Init.AutoRetransmission = DISABLE;
@@ -947,6 +942,16 @@ static void MX_USART3_UART_Init(void)
   LL_USART_InitTypeDef USART_InitStruct = {0};
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  /** Initializes the peripherals clocks
+  */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3);
@@ -1201,10 +1206,10 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     uint8_t datalen = DatalenToInt(RxHeader.DataLength);
 
     /* It is strongly suggested to keep the possibility to jump to System Booloader from application */
-    if (RxHeader.Identifier==0x1fffffff && datalen == 4 && RxData[0] == 0 && RxData[1] == 1 && RxData[2] == 2 && RxData[3] == 3)
+    if (RxHeader.Identifier == 0x1fffffff && datalen == 4 && RxData[0] == 0 && RxData[1] == 1 && RxData[2] == 2 && RxData[3] == 3)
     {
       /* Cannot go to bootloader directly from ISR */
-      bootloaderRequest = 1;
+      BootloaderRequest = 1;
       return;
     }
 
@@ -1319,8 +1324,6 @@ void jumpToBootloader(void)
     __disable_irq();
     /* Reset all configured peripherals */
     HAL_DeInit();
-    /* Cannot leave interrupts disabled - no one would enable them */
-    __enable_irq();
     // deconfigure the usb
     //USBD_DeInit(&hUsbDeviceFS);
     /* System clock frequency 72 MHz - PLL clocked by HSI */
@@ -1352,11 +1355,6 @@ void jumpToBootloader(void)
     SysTick->LOAD = 0;
     SysTick->VAL = 0;
 
-    /**
-     * Step: Disable all interrupts
-     */
-    //__disable_irq();
-
     /* ARM Cortex-M Programming Guide to Memory Barrier Instructions.*/
     __DSB();
 
@@ -1370,7 +1368,18 @@ void jumpToBootloader(void)
     __DSB();
     __ISB();
 
+    /* Clear Interrupt Enable Register & Interrupt Pending Register */
+    for (int i = 0; i < 5; i++)
+    {
+      NVIC->ICER[i]=0xFFFFFFFF;
+      NVIC->ICPR[i]=0xFFFFFFFF;
+    }
+
     SCB->VTOR = 0;                /* Set vector table offset to 0 */
+
+    /* Re-enable all interrupts */
+    /* Cannot leave interrupts disabled - no one would enable them */
+    __enable_irq();
 
     /**
      * Step: Set jump memory location for system memory
@@ -1464,5 +1473,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

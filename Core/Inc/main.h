@@ -29,6 +29,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32g4xx_hal.h"
+
 #include "stm32g4xx_ll_spi.h"
 #include "stm32g4xx_ll_tim.h"
 #include "stm32g4xx_ll_usart.h"
@@ -215,5 +216,3 @@ void SpiInterruptCallback(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
